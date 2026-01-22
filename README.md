@@ -171,6 +171,28 @@ collections = {
 
 ---
 
+## 🏗️ Архитектура проекта
+
+```mermaid
+flowchart TD
+    subgraph "Fitness RAG System"
+        A["Generator\n(fitness_rag_generator.py)"] -->|Генерация данных| B["RAG System\n(fitness_rag.py)"]
+        C["JSON Data\n(fitness_rag_data/)"] -->|250+ упражнений,\n168 планов,\nразминки| B
+        D["SentenceTransformer\n(all-MiniLM-L6-v2)"] -->|384-мерные векторы| E["Embedding Layer"]
+        E --> B
+        B --> F["ChromaDB\n(DuckDB + Parquet)\n• exercises\n• workout_plans\n• warmup"]
+    end
+
+    subgraph "Поток данных"
+        direction LR
+        G["1️⃣ GENERATE\nfitness_rag_generator.py"] --> H["2️⃣ EMBED\nSentenceTransformer"]
+        H --> I["3️⃣ STORE\nChromaDB"]
+        I --> J["4️⃣ RETRIEVE\nСемантический поиск"]
+    end
+```
+
+---
+
 ## 📖 Использование RAG системы
 
 ### Пример 1: Инициализация RAG
@@ -462,28 +484,6 @@ collection = client.create_collection("my_exercises")
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 # Добавляешь свои данные...
-```
-
----
-
-## 🏗️ Архитектура проекта
-
-```mermaid
-flowchart TD
-    subgraph "Fitness RAG System"
-        A["Generator\n(fitness_rag_generator.py)"] -->|Генерация данных| B["RAG System\n(fitness_rag.py)"]
-        C["JSON Data\n(fitness_rag_data/)"] -->|250+ упражнений,\n168 планов,\nразминки| B
-        D["SentenceTransformer\n(all-MiniLM-L6-v2)"] -->|384-мерные векторы| E["Embedding Layer"]
-        E --> B
-        B --> F["ChromaDB\n(DuckDB + Parquet)\n• exercises\n• workout_plans\n• warmup"]
-    end
-
-    subgraph "Поток данных"
-        direction LR
-        G["1️⃣ GENERATE\nfitness_rag_generator.py"] --> H["2️⃣ EMBED\nSentenceTransformer"]
-        H --> I["3️⃣ STORE\nChromaDB"]
-        I --> J["4️⃣ RETRIEVE\nСемантический поиск"]
-    end
 ```
 
 ---
