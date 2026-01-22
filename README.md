@@ -182,7 +182,10 @@ flowchart TD
         E --> B
         B --> F["ChromaDB\n(DuckDB + Parquet)\n• exercises\n• workout_plans\n• warmup"]
     end
+```
 
+```mermaid
+flowchart TD
     subgraph "Поток данных"
         direction LR
         G["1️⃣ GENERATE\nfitness_rag_generator.py"] --> H["2️⃣ EMBED\nSentenceTransformer"]
