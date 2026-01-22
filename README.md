@@ -470,48 +470,20 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 ```mermaid
 flowchart TD
-┌─────────────────────────────────────────────────────────────────┐
-│                    Fitness RAG System                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────────┐     ┌──────────────────────────────────┐ │
-│  │   Generator      │     │          RAG System              │ │
-│  │  (fitness_rag_   │────▶│   (fitness_rag.py)              │ │
-│  │   generator.py)  │     │                                  │ │
-│  └────────┬─────────┘     │  ┌────────────────────────────┐  │ │
-│           │               │  │   ChromaDB (DuckDB+Parquet) │  │ │
-│           ▼               │  │                            │  │ │
-│  ┌──────────────────┐     │  │   3 Collections:           │  │ │
-│  │  JSON Data       │     │  │   • exercises (250+)       │  │ │
-│  │  (fitness_rag_   │     │  │   • workout_plans (168)    │  │ │
-│  │   data/)         │     │  │   • warmup                 │  │ │
-│  └──────────────────┘     │  └────────────────────────────┘  │ │
-│                           │                                  │ │
-│  ┌──────────────────┐     │  ┌────────────────────────────┐  │ │
-│  │ SentenceTransf.  │────▶│  │   SentenceTransformer      │  │ │
-│  │ (all-MiniLM-L6-  │     │  │   (all-MiniLM-L6-v2)       │  │ │
-│  │  v2)             │     │  │   384-мерные векторы       │  │ │
-│  └──────────────────┘     │  └────────────────────────────┘  │ │
-│                           └──────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+    subgraph "Fitness RAG System"
+        A["Generator\n(fitness_rag_generator.py)"] -->|Генерация данных| B["RAG System\n(fitness_rag.py)"]
+        C["JSON Data\n(fitness_rag_data/)"] -->|250+ упражнений,\n168 планов,\nразминки| B
+        D["SentenceTransformer\n(all-MiniLM-L6-v2)"] -->|384-мерные векторы| E["Embedding Layer"]
+        E --> B
+        B --> F["ChromaDB\n(DuckDB + Parquet)\n• exercises\n• workout_plans\n• warmup"]
+    end
 
-┌─────────────────────────────────────────────────────────────────┐
-│                    Поток данных                                 │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1️⃣  GENERATE: fitness_rag_generator.py                        │
-│      └───▶ fitness_rag_data/*.json (250+ упражнений, 168 планов)│
-│                                                                 │
-│  2️⃣  EMBED: SentenceTransformer (all-MiniLM-L6-v2)             │
-│      └───▶ Текст → 384-мерные векторы                          │
-│                                                                 │
-│  3️⃣  STORE: ChromaDB (DuckDB + Parquet)                        │
-│      └───▶ fitness_chroma_db/ (коллекции с индексами)          │
-│                                                                 │
-│  4️⃣  RETRIEVE: Семантический поиск                             │
-│      └───▶ query → top-k релевантных документов                │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+    subgraph "Поток данных"
+        direction LR
+        G["1️⃣ GENERATE\nfitness_rag_generator.py"] --> H["2️⃣ EMBED\nSentenceTransformer"]
+        H --> I["3️⃣ STORE\nChromaDB"]
+        I --> J["4️⃣ RETRIEVE\nСемантический поиск"]
+    end
 ```
 
 ---
